@@ -200,6 +200,10 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
         public ActionResult GetImagen(string imagen)
         {
             string rutaFisica = Server.MapPath("~/Content/Producto/")+ imagen;
+
+            if (imagen == "info.jpg" || imagen == "warning.png")
+                rutaFisica = Server.MapPath("~/Content/Iconos/") + imagen;
+
             if (imagen != "NoDisponible" && System.IO.File.Exists(rutaFisica))
             {
                 byte[] image = System.IO.File.ReadAllBytes(rutaFisica);

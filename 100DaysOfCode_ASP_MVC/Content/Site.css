@@ -22,3 +22,10 @@ select,
 textarea {
     max-width: 280px;
 }
+
+.modal-body .mensaje{
+    display: flex;
+    justify-content: center;
+    height: 100px;
+    align-items: center;
+}
