@@ -10,30 +10,17 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
 {
     public class ProductoController : Controller
     {
+        model_producto mProducto = new model_producto();
         // GET: Producto
         public ActionResult Index()
         {
-            List<Producto> lstProductos = (List<Producto>)Session["productos"];
-            if (lstProductos == null)
-                lstProductos = GetProductos();
-
-            return View(lstProductos);
+            return View(GetProductos(new Producto()));
         }
 
         // GET: Producto/Details/5
         public ActionResult Details(int id)
         {
-            List<Producto> lstProductos = (List<Producto>)Session["productos"];
-            if (lstProductos == null)
-                lstProductos = GetProductos();
-
-            for (int i = 0; i < lstProductos.Count; i++)
-            {
-                if (lstProductos[i].id == id)
-                    return View(lstProductos[i]);
-            }
-
-            return View(new Producto());
+            return View(GetProducto(id));
         }
 
         // GET: Producto/Create
@@ -48,11 +35,7 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
         {
             if (SonValidos(collection))
             {
-                List<Producto> lstProductos = (List<Producto>)Session["productos"];
-                if (lstProductos == null)
-                    lstProductos = GetProductos();
                 HttpPostedFileBase image = Request.Files[0];
-
                 string rutaFisica = Server.MapPath("~/Content/Producto/");
 
                 try
@@ -60,13 +43,11 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
                     if (!Directory.Exists(rutaFisica))
                         Directory.CreateDirectory(rutaFisica);
 
-                    Producto oProducto = new Producto("0000" + lstProductos.Count.ToString(), collection[2], Convert.ToInt32(collection[3]), Convert.ToDouble(collection[4]), image.FileName);
-                    oProducto.id = lstProductos.Count;
-                    lstProductos.Add(oProducto);
+                    Producto oProducto = new Producto("", collection[2], Convert.ToInt32(collection[3]), Convert.ToDouble(collection[4]), image.FileName);
+
+                    mProducto.AgregarProducto(oProducto);
 
                     image.SaveAs(rutaFisica + image.FileName);
-
-                    Session["productos"] = lstProductos;
 
                     return RedirectToAction("Index");
                 }
@@ -85,54 +66,30 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
         // GET: Producto/Edit/5
         public ActionResult Edit(int id)
         {
-            List<Producto> lstProductos = (List<Producto>)Session["productos"];
-            if (lstProductos == null)
-                lstProductos = GetProductos();
-
-            for (int i = 0; i < lstProductos.Count; i++)
-            {
-                if (lstProductos[i].id == id)
-                    return View(lstProductos[i]);
-            }
-
-            return View(new Producto());
+            return View(GetProducto(id));
         }
 
         // POST: Producto/Edit/5
         [HttpPost]
         public ActionResult Edit(int id, FormCollection collection)
         {
-            List<Producto> lstProductos = (List<Producto>)Session["productos"];
-            if (lstProductos == null)
-                lstProductos = GetProductos();
             if (SonValidos(collection))
             {
                 HttpPostedFileBase image = Request.Files[0];
-
                 string nuevaImagen = image.FileName != "" ? image.FileName : "NoDisponible";
 
                 try
                 {
-                    for (int i = 0; i < lstProductos.Count; i++)
-                    {
-                        if (lstProductos[i].id == id)
-                        {
-                            lstProductos[i].codigo = collection[2];
-                            lstProductos[i].nombre = collection[3];
-                            lstProductos[i].cantidad = Convert.ToInt32(collection[4]);
-                            lstProductos[i].precio = Convert.ToDouble(collection[5]);
-                            lstProductos[i].rutaImagen = nuevaImagen != "NoDisponible" ? nuevaImagen : collection[6] != "NoDisponible" ? collection[6] : nuevaImagen;
-                        }
+                    Producto oProducto = new Producto("", collection[3], Convert.ToInt32(collection[4]), Convert.ToDouble(collection[5]), nuevaImagen != "NoDisponible" ? nuevaImagen : collection[6] != "NoDisponible" ? collection[6] : nuevaImagen);
+                    oProducto.id = id;
 
-                    }
+                    mProducto.ModificarProducto(oProducto);
 
                     if (nuevaImagen != "NoDisponible")
                     {
                         string rutaFisica = Server.MapPath("~/Content/Producto/");
                         image.SaveAs(rutaFisica + image.FileName);
                     }
-
-                    Session["productos"] = lstProductos;
 
                     return RedirectToAction("Index");
                 }
@@ -143,56 +100,29 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
             }
             else
             {
-                ViewBag.Mensaje = "Verifique los campos";
-                for (int i = 0; i < lstProductos.Count; i++)
-                {
-                    if (lstProductos[i].id == id)
-                        return View(lstProductos[i]);
-                }
-
-                return View(new Producto());
+                return View(GetProducto(id));
             }
         }
 
         // GET: Producto/Delete/5
         public ActionResult Delete(int id)
         {
-            List<Producto> lstProductos = (List<Producto>)Session["productos"];
-            if (lstProductos == null)
-                lstProductos = GetProductos();
-
-            for (int i = 0; i < lstProductos.Count; i++)
-            {
-                if (lstProductos[i].id == id)
-                    return View(lstProductos[i]);
-            }
-
-            return View(new Producto());
+            return View(GetProducto(id));
         }
 
         // POST: Producto/Delete/5
         [HttpPost]
         public ActionResult Delete(int id, FormCollection collection)
         {
-            List<Producto> lstProductos = (List<Producto>)Session["productos"];
-            if (lstProductos == null)
-                lstProductos = GetProductos();
-
             try
             {
-                for (int i = 0; i < lstProductos.Count; i++)
-                {
-                    if (lstProductos[i].id == id)
-                        lstProductos.RemoveAt(i);
-                }
+                mProducto.EliminarProducto(id);
 
                 if (collection[1] != "NoDisponible")
                 {
                     string rutaFisica = Server.MapPath("~/Content/Producto/") + collection[1];
                     System.IO.File.Delete(rutaFisica);
                 }
-
-                Session["productos"] = lstProductos;
 
                 return RedirectToAction("Index");
             }
@@ -202,6 +132,28 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
             }
         }
 
+        private Producto GetProducto(int id)
+        {
+            System.Data.DataTable dt = mProducto.BuscarProducto(new Producto());
+
+            Producto item = new Producto();
+
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                if (Convert.ToInt32(dt.Rows[i].ItemArray[0]) == id)
+                {
+                    item.id = Convert.ToInt32(dt.Rows[i].ItemArray[0]);
+                    item.codigo = dt.Rows[i].ItemArray[1].ToString();
+                    item.nombre = dt.Rows[i].ItemArray[2].ToString();
+                    item.cantidad = Convert.ToInt32(dt.Rows[i].ItemArray[3]);
+                    item.precio = Convert.ToDouble(dt.Rows[i].ItemArray[4]);
+                    item.rutaImagen = dt.Rows[i].ItemArray[5].ToString();
+                    break;
+                }
+            }
+
+            return item;
+        }
         private List<Producto> GetProductos()
         {
             List<Producto> lstProductos = new List<Producto>();
@@ -217,12 +169,35 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
 
             return lstProductos;
         }
+        private List<Producto> GetProductos(Producto oProducto)
+        {
+            List<Producto> lstProductos = new List<Producto>();
+            model_producto mProducto = new model_producto();
+
+            System.Data.DataTable dt = mProducto.BuscarProducto(oProducto);
+
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                Producto item = new Producto();
+                item.id = Convert.ToInt32(dt.Rows[i].ItemArray[0]);
+                item.codigo = dt.Rows[i].ItemArray[1].ToString();
+                item.nombre = dt.Rows[i].ItemArray[2].ToString();
+                item.cantidad = Convert.ToInt32(dt.Rows[i].ItemArray[3]);
+                item.precio = Convert.ToDouble(dt.Rows[i].ItemArray[4]);
+                item.rutaImagen = dt.Rows[i].ItemArray[5].ToString();
+
+                lstProductos.Add(item);
+            }
+
+            return lstProductos;
+        }
 
         public ActionResult GetImagen(string imagen)
         {
+            string rutaFisica = Server.MapPath("~/Content/Producto/")+ imagen;
+            //bool exist = fileExist;
             if (imagen != "NoDisponible")
             {
-                string rutaFisica = Server.MapPath("~/Content/Producto/")+ imagen;
                 byte[] image = System.IO.File.ReadAllBytes(rutaFisica);
                 string ext = imagen.Split('.')[1] == "png" ? "png" : "jpeg";
 

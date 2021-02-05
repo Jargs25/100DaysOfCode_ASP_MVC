@@ -16,7 +16,8 @@ namespace _100DaysOfCode_ASP_MVC.Models
 
         public Producto()
         {
-
+            codigo = "";
+            nombre = "";
         }
 
         public Producto(string codigo, string nombre, int cantidad, double precio, string rutaImagen)
