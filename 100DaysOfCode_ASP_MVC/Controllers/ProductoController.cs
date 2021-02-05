@@ -36,6 +36,8 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
             if (SonValidos(collection))
             {
                 HttpPostedFileBase image = Request.Files[0];
+                string nuevaImagen = image.FileName != "" ? image.FileName : "NoDisponible";
+
                 string rutaFisica = Server.MapPath("~/Content/Producto/");
 
                 try
@@ -43,11 +45,14 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
                     if (!Directory.Exists(rutaFisica))
                         Directory.CreateDirectory(rutaFisica);
 
-                    Producto oProducto = new Producto("", collection[2], Convert.ToInt32(collection[3]), Convert.ToDouble(collection[4]), image.FileName);
+                    Producto oProducto = new Producto("", collection[2], Convert.ToInt32(collection[3]), Convert.ToDouble(collection[4]), nuevaImagen != "NoDisponible" ? nuevaImagen : "NoDisponible");
 
                     mProducto.AgregarProducto(oProducto);
 
-                    image.SaveAs(rutaFisica + image.FileName);
+                    if (nuevaImagen != "NoDisponible")
+                    {
+                        image.SaveAs(rutaFisica + image.FileName);
+                    }
 
                     return RedirectToAction("Index");
                 }
@@ -118,9 +123,9 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
             {
                 mProducto.EliminarProducto(id);
 
-                if (collection[1] != "NoDisponible")
+                string rutaFisica = Server.MapPath("~/Content/Producto/") + collection[1];
+                if (collection[1] != "NoDisponible" && System.IO.File.Exists(rutaFisica))
                 {
-                    string rutaFisica = Server.MapPath("~/Content/Producto/") + collection[1];
                     System.IO.File.Delete(rutaFisica);
                 }
 
