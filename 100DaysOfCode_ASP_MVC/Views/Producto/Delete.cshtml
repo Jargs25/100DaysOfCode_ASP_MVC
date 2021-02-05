@@ -66,8 +66,27 @@
 
         <div class="form-actions no-color">
             <input type="hidden" name="imagen" value="@Model.rutaImagen" />
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
+            <button class="btn btn-default" data-toggle="modal" data-target="#modal">Delete</button>
+            @Html.ActionLink("Back to List", "Index", "Producto", null, new { @class = "btn btn-default"} )
+        </div>
+
+        <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+            <div>
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="modalLabel">Mensaje del sistema</h4>
+                        </div>
+                        <div class="modal-body">
+                            Esta acción no podrá deshacerse ¿Desea continuar?
+                        </div>
+                        <div class="modal-footer">
+                            <input type="submit" value="Delete" class="btn btn-default" />
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     }
 </div>
