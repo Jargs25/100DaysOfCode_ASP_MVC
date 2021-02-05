@@ -195,8 +195,7 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
         public ActionResult GetImagen(string imagen)
         {
             string rutaFisica = Server.MapPath("~/Content/Producto/")+ imagen;
-            //bool exist = fileExist;
-            if (imagen != "NoDisponible")
+            if (imagen != "NoDisponible" && System.IO.File.Exists(rutaFisica))
             {
                 byte[] image = System.IO.File.ReadAllBytes(rutaFisica);
                 string ext = imagen.Split('.')[1] == "png" ? "png" : "jpeg";
