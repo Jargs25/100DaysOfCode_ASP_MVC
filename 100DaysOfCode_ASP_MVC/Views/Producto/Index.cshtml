@@ -189,12 +189,12 @@
         <div class="modal-dialog center">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="modalLabel">Mensaje del sistema</h4>
+                    <h3 class="modal-title" id="modalLabel">Mensaje del sistema</h3>
                 </div>
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-3 text-center">
-                            <img src="/Producto/GetImagen?imagen=warning.png" width="100px" height="100px" />
+                            <img src="/Producto/GetImagen?imagen=warning.png" width="130px" height="130px" />
                         </div>
                         <div class="col-md-9 mensaje">
                             <p>Esta acción no podrá deshacerse ¿Desea continuar?</p>
@@ -202,13 +202,13 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    @using (Html.BeginForm("delete","producto", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                    @using (Html.BeginForm("delete","producto", FormMethod.Post, new { enctype = "multipart/form-data", @class="text-center" }))
                     {
                         @Html.AntiForgeryToken()
                         @Html.HiddenFor(model => oProducto.id)
                         <input type="hidden" name="imagen" value="@oProducto.rutaImagen" />
-                        <input type="submit" value="Delete" class="btn btn-default" />
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <input type="submit" value="SI" class="btn btn-default btn-lg" />
+                        <button type="button" class="btn btn-default btn-lg" data-dismiss="modal">NO</button>
                     }
                 </div>
             </div>

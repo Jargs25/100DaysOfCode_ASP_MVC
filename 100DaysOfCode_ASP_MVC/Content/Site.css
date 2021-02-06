@@ -26,9 +26,14 @@ textarea {
 .modal-body .mensaje{
     display: flex;
     justify-content: center;
-    height: 100px;
+    height: 130px;
     align-items: center;
 }
+.modal-body .mensaje{
+    font-size: 20px;
+    text-align: center;
+}
+
 fieldset {
     display: block;
     margin-inline-start: 2px;
