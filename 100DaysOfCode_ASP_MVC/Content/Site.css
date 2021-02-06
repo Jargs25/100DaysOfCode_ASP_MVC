@@ -29,3 +29,73 @@ textarea {
     height: 100px;
     align-items: center;
 }
+fieldset {
+    display: block;
+    margin-inline-start: 2px;
+    margin-inline-end: 2px;
+    padding-block-start: 0.35em;
+    padding-inline-start: 0.75em;
+    padding-inline-end: 0.75em;
+    padding-block-end: 0.625em;
+    min-inline-size: min-content;
+    border-width: 2px;
+    border-style: groove;
+    border-color: orange;
+    border-image: initial;
+}
+
+fieldset legend{
+    display: block;
+    width: auto;
+    padding-inline-start: 2px;
+    padding-inline-end: 2px;
+    border-width: initial;
+    border-style: none;
+    border-color: initial;
+    border-image: initial;
+}
+
+fieldset .table-responsive{
+    width: 510px;
+    height: 278px;
+    overflow: auto;
+    margin-bottom: 16px;
+    margin-left: 8px;
+}
+fieldset .table-responsive a{
+    color: #dd8f00;
+    text-decoration: underline;
+}
+
+.noDisponible{
+    position: absolute;
+    width: 80px;
+    left: 53px;
+    top: 46px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.btn-default {
+    background-color: oldlace;
+}
+.btn {
+    border-color: orange;
+}
+
+.modal-vertical{
+    display: table;
+    width: 100%;
+    height: 100%;
+}
+
+.modal-vertical .center{
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.modal-content {
+    width:inherit;
+    height:inherit;
+    margin:0 auto;
+}

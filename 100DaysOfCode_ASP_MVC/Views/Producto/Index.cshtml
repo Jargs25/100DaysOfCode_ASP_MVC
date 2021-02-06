@@ -2,56 +2,221 @@
 
 @{
     ViewBag.Title = "Index";
+    _100DaysOfCode_ASP_MVC.Models.Producto oProducto = (_100DaysOfCode_ASP_MVC.Models.Producto)ViewBag.Producto;
+    string accion = ViewBag.Accion;
+    string btnBuscar = accion == "edit" ? "Limpiar" : "Buscar";
+    string enabled = btnBuscar == "Limpiar" ? "disabled" : "";
+    string disabled = enabled == "disabled" ? "" : "disabled";
 }
 
 <h2>CRUD Productos</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            Código
-        </th>
-        <th>
-            Nombre
-        </th>
-        <th>
-            Cantidad
-        </th>
-        <th>
-            Precio
-        </th>
-        <th>
-            rutaImagen
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.codigo)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.nombre)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.cantidad)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.precio)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.rutaImagen)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.id })
-        </td>
-    </tr>
+@if (ViewBag.Mensaje != null)
+{
+<div class="row">
+    <div class="col-md-6">
+        <div class="alert alert-warning fade in">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <strong>Mensaje:</strong> @ViewBag.Mensaje
+        </div>
+    </div>
+</div>
 }
+<div class="row">
+    <div class="col-md-6">
+        <fieldset>
+        <legend>Datos</legend>
+        @using (Html.BeginForm(accion, "Producto", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => oProducto.id)
 
-</table>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <div class="col-md-12 text-center">
+                                @if (oProducto.rutaImagen != "NoDisponible" && oProducto.rutaImagen != null)
+                                {
+                                    <img src='@Url.Action("GetImagen", "Producto", new { imagen = oProducto.rutaImagen })' width="141px" height="141px" id="imgProducto" />
+                                }
+                                else
+                                {
+                                    <img width="141px" height="141px" id="imgProducto" />
+                                    if (oProducto.rutaImagen == "NoDisponible")
+                                    {
+                                        <span class="noDisponible">No Disponible</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-12 text-center">
+                                <label class="btn btn-default btn-lg" for="imagen">Subir Imagen</label>
+                                <input class="form-control hidden" type="file" id="imagen" name="imagen" />
+                                <input type="hidden" name="imagen" value="@oProducto.rutaImagen" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="form-horizontal">
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        <div class="form-group">
+                            @Html.LabelFor(model => oProducto.codigo, htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-9">
+                                @Html.EditorFor(model => oProducto.codigo, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => oProducto.codigo, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => oProducto.nombre, htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-9">
+                                @Html.EditorFor(model => oProducto.nombre, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => oProducto.nombre, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => oProducto.cantidad, htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-9">
+                                @Html.EditorFor(model => oProducto.cantidad, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => oProducto.cantidad, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => oProducto.precio, htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-9">
+                                @Html.EditorFor(model => oProducto.precio, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => oProducto.precio, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="col-md-2"></div>
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input type="submit" value="Agregar" @(enabled) class="btn btn-default btn-block" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="submit" value="Modificar" @(disabled) class="btn btn-default btn-block" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2"></div>
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button class="btn btn-default btn-block" data-toggle="modal" data-target="#modal" @(disabled) >Eliminar</button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="submit" value="@(btnBuscar)" class="btn btn-default btn-block" id="btnBuscar"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        }
+    </fieldset>
+    </div>
+    <div class="col-md-6">
+        <fieldset>
+            <legend>Registros</legend>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <tr>
+                        <th></th>
+                        <th>
+                            Código
+                        </th>
+                        <th>
+                            Nombre
+                        </th>
+                        <th>
+                            Cantidad
+                        </th>
+                        <th>
+                            Precio
+                        </th>
+                        <th>
+                            rutaImagen
+                        </th>
+                    </tr>
+                    @foreach (var item in Model)
+                    {
+                            <tr
+                        @if (item.id == oProducto.id)
+                        {
+                            @("style=background-color:oldlace;")
+                        }
+                        >
+                            <td>
+                                @Html.ActionLink("Ver", "Index", new { id = item.id })
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.codigo)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.nombre)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.cantidad)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.precio)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.rutaImagen)
+                            </td>
+                        </tr>
+                    }
+
+                </table>
+            </div>
+        </fieldset>
+    </div>
+</div>
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-vertical">
+        <div class="modal-dialog center">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="modalLabel">Mensaje del sistema</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <img src="/Producto/GetImagen?imagen=warning.png" width="100px" height="100px" />
+                        </div>
+                        <div class="col-md-9 mensaje">
+                            <p>Esta acción no podrá deshacerse ¿Desea continuar?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @using (Html.BeginForm("delete","producto", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(model => oProducto.id)
+                        <input type="hidden" name="imagen" value="@oProducto.rutaImagen" />
+                        <input type="submit" value="Delete" class="btn btn-default" />
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/site")
+}
