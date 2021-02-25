@@ -5,47 +5,50 @@ using System.Web;
 using System.Web.Mvc;
 using _100DaysOfCode_ASP_MVC.Models;
 using System.IO;
+using _100DaysOfCode_ASP_MVC.WCFProductos;
 
 namespace _100DaysOfCode_ASP_MVC.Controllers
 {
     public class ProductoController : Controller
     {
-        model_producto mProducto = new model_producto();
+        WCFProductoClient svcProducto = new WCFProductoClient();
+
         // GET: Producto
         public ActionResult Index(int id = 0)
         {
-            List<Producto> lstProductos;
+            Producto[] aryProductos;
 
             try
             {
-                Producto oProducto = new Producto(Request.Form[3], Request.Form[4], Convert.ToInt32(Request.Form[5] == "" ? "0" : Request.Form[5]), Convert.ToDouble(Request.Form[6] == "" ? "0" : Request.Form[6]), null);
-
-                lstProductos = GetProductos(oProducto);
+                Producto oProducto = GetProducto(Request.Form[4], Convert.ToInt32(Request.Form[5] == "" ? "0" : Request.Form[5]), Convert.ToDouble(Request.Form[6] == "" ? "0" : Request.Form[6]));
+                oProducto.codigo = Request.Form[3];
+                
+                aryProductos = svcProducto.BuscarProductos(oProducto);
 
                 ViewBag.Producto = oProducto;
                 ViewBag.Accion = "create";
 
                 if (id > 0)
                 {
-                    ViewBag.Producto = GetProducto(id, lstProductos);
+                    ViewBag.Producto = GetProducto(id, aryProductos);
                     ViewBag.Accion = "edit";
                 }
             }
             catch
             {
-                lstProductos = GetProductos(new Producto());
+                aryProductos = svcProducto.BuscarProductos(GetProducto());
 
                 ViewBag.Producto = new Producto();
                 ViewBag.Accion = "create";
 
                 if (id > 0)
                 {
-                    ViewBag.Producto = GetProducto(id, lstProductos);
+                    ViewBag.Producto = GetProducto(id, aryProductos);
                     ViewBag.Accion = "edit";
                 }
             }
 
-            return View(lstProductos);
+            return View(aryProductos);
         }
 
         // POST: Producto/Create
@@ -57,29 +60,20 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
                 HttpPostedFileBase image = Request.Files[0];
                 string nuevaImagen = image.FileName != "" ? image.FileName : "NoDisponible";
 
-                string rutaFisica = Server.MapPath("~/Content/Producto/");
-
                 try
                 {
-                    if (!Directory.Exists(rutaFisica))
-                        Directory.CreateDirectory(rutaFisica);
+                    Producto oProducto = GetProducto(collection[4], Convert.ToInt32(collection[5]), Convert.ToDouble(collection[6]));
+                    oProducto.rutaImagen = nuevaImagen != "NoDisponible" ? nuevaImagen : "NoDisponible";
+                    oProducto.imagen = GetByteArrayImage(image.InputStream);
 
-                    Producto oProducto = new Producto("", collection[4], Convert.ToInt32(collection[5]), Convert.ToDouble(collection[6]), nuevaImagen != "NoDisponible" ? nuevaImagen : "NoDisponible");
-
-                    mProducto.AgregarProducto(oProducto);
-
-                    if (nuevaImagen != "NoDisponible")
-                    {
-                        image.SaveAs(rutaFisica + image.FileName);
-                    }
+                    svcProducto.AgregarProducto(oProducto);
                 }
                 catch
                 {
-
                     ViewBag.Producto = new Producto();
                     ViewBag.Accion = "create";
 
-                    return View("Index",GetProductos(new Producto()));
+                    return View("Index",svcProducto.BuscarProductos(GetProducto()));
                 }
             }
             else
@@ -90,7 +84,7 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
             ViewBag.Producto = new Producto();
             ViewBag.Accion = "create";
 
-            return View("Index", GetProductos(new Producto()));
+            return View("Index", svcProducto.BuscarProductos(GetProducto()));
         }
 
         // POST: Producto/Edit/5
@@ -106,39 +100,34 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
 
                 try
                 {
-                    Producto oProducto = new Producto("", collection[4], Convert.ToInt32(collection[5]), Convert.ToDouble(collection[6]), nuevaImagen != "NoDisponible" ? nuevaImagen : collection[2] != "NoDisponible" ? collection[2] : nuevaImagen);
+                    Producto oProducto = GetProducto(collection[4], Convert.ToInt32(collection[5]), Convert.ToDouble(collection[6]));
+                    oProducto.rutaImagen = nuevaImagen != "NoDisponible" ? nuevaImagen : collection[2] != "NoDisponible" ? collection[2] : nuevaImagen;
+                    oProducto.imagen = GetByteArrayImage(image.InputStream);
                     oProducto.id = id;
 
+                    svcProducto.ModificarProducto(oProducto);
                     ViewBag.Producto = oProducto;
-
-                    mProducto.ModificarProducto(oProducto);
-
-                    if (nuevaImagen != "NoDisponible")
-                    {
-                        string rutaFisica = Server.MapPath("~/Content/Producto/");
-                        image.SaveAs(rutaFisica + image.FileName);
-                    }
 
                     return RedirectToAction("Index");
                 }
                 catch
                 {
-                    List<Producto> lstProductos = GetProductos(new Producto());
+                    Producto[] aryProductos = svcProducto.BuscarProductos(GetProducto());
                     ViewBag.Mensaje = "Verifique los campos";
-                    ViewBag.Producto = GetProducto(id, lstProductos);
+                    ViewBag.Producto = GetProducto(id, aryProductos);
                     ViewBag.Accion = "edit";
 
-                    return View("Index", lstProductos);
+                    return View("Index", aryProductos);
                 }
             }
             else
             {
-                List<Producto> lstProductos = GetProductos(new Producto());
+                Producto[] aryProductos = svcProducto.BuscarProductos(GetProducto());
                 ViewBag.Mensaje = "Verifique los campos";
-                ViewBag.Producto = GetProducto(id, lstProductos);
+                ViewBag.Producto = GetProducto(id, aryProductos);
                 ViewBag.Accion = "edit";
 
-                return View("Index", lstProductos);
+                return View("Index", aryProductos);
             }
 
         }
@@ -150,102 +139,23 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
             int id = Convert.ToInt32(collection[1]);
             try
             {
+                Producto oProducto = GetProducto();
+                oProducto.id = id;
+                oProducto.rutaImagen = collection[1];
 
-                mProducto.EliminarProducto(id);
-
-                string rutaFisica = Server.MapPath("~/Content/Producto/") + collection[1];
-                if (collection[1] != "NoDisponible" && System.IO.File.Exists(rutaFisica))
-                {
-                    System.IO.File.Delete(rutaFisica);
-                }
+                svcProducto.EliminarProducto(oProducto);
 
                 return RedirectToAction("Index");
             }
             catch
             {
-                List<Producto> lstProductos = GetProductos(new Producto());
+                Producto[] aryProductos = svcProducto.BuscarProductos(GetProducto());
                 ViewBag.Mensaje = "Verifique los campos";
-                ViewBag.Producto = GetProducto(id, lstProductos);
+                ViewBag.Producto = GetProducto(id, aryProductos);
                 ViewBag.Accion = "edit";
 
-                return View("Index", lstProductos);
+                return View("Index", aryProductos);
             }
-        }
-
-        private Producto GetProducto(int id)
-        {
-            System.Data.DataTable dt = mProducto.BuscarProducto(new Producto());
-
-            Producto item = new Producto();
-
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                if (Convert.ToInt32(dt.Rows[i].ItemArray[0]) == id)
-                {
-                    item.id = Convert.ToInt32(dt.Rows[i].ItemArray[0]);
-                    item.codigo = dt.Rows[i].ItemArray[1].ToString();
-                    item.nombre = dt.Rows[i].ItemArray[2].ToString();
-                    item.cantidad = Convert.ToInt32(dt.Rows[i].ItemArray[3]);
-                    item.precio = Convert.ToDouble(dt.Rows[i].ItemArray[4]);
-                    item.rutaImagen = dt.Rows[i].ItemArray[5].ToString();
-                    break;
-                }
-            }
-
-            return item;
-        }
-        private Producto GetProducto(int id, List<Producto> lstProductos)
-        {
-            Producto oProducto = new Producto();
-
-            for (int i = 0; i < lstProductos.Count; i++)
-            {
-                if (lstProductos[i].id == id)
-                {
-                    oProducto = new Producto(lstProductos[i].codigo, lstProductos[i].nombre, lstProductos[i].cantidad, lstProductos[i].precio, lstProductos[i].rutaImagen);
-                    oProducto.id = lstProductos[i].id;
-                    break;
-                }
-            }
-
-            return oProducto;
-        }
-        private List<Producto> GetProductos()
-        {
-            List<Producto> lstProductos = new List<Producto>();
-
-            lstProductos.Add(new Producto("00001", "Producto1", 1, 10.50, "NoDisponible"));
-            lstProductos.Add(new Producto("00002", "Producto2", 2, 11.00, "NoDisponible"));
-            lstProductos.Add(new Producto("00003", "Producto3", 3, 11.50, "NoDisponible"));
-            lstProductos.Add(new Producto("00004", "Producto4", 4, 12.00, "NoDisponible"));
-            lstProductos[0].id = 0;
-            lstProductos[1].id = 1;
-            lstProductos[2].id = 2;
-            lstProductos[3].id = 3;
-
-            return lstProductos;
-        }
-        private List<Producto> GetProductos(Producto oProducto)
-        {
-            List<Producto> lstProductos = new List<Producto>();
-            model_producto mProducto = new model_producto();
-
-            System.Data.DataTable dt = mProducto.BuscarProducto(oProducto);
-
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                Producto item = new Producto();
-                item.id = Convert.ToInt32(dt.Rows[i].ItemArray[0]);
-                item.codigo = dt.Rows[i].ItemArray[1].ToString();
-                item.nombre = dt.Rows[i].ItemArray[2].ToString();
-                item.cantidad = Convert.ToInt32(dt.Rows[i].ItemArray[3]);
-                item.precio = Convert.ToDouble(dt.Rows[i].ItemArray[4]);
-                item.rutaImagen = dt.Rows[i].ItemArray[5].ToString();
-
-                lstProductos.Add(item);
-            }
-
-            return lstProductos;
         }
 
         public ActionResult GetImagen(string imagen)
@@ -267,7 +177,13 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
                 return Content("");
             }
         }
-        public bool SonValidos(FormCollection form)
+        private byte[] GetByteArrayImage(Stream sm)
+        {
+            MemoryStream ms = new MemoryStream();
+            sm.CopyTo(ms);
+            return ms.ToArray();
+        }
+        private bool SonValidos(FormCollection form)
         {
             if (form[4] != "" && form[5] != "")
             {
@@ -275,6 +191,52 @@ namespace _100DaysOfCode_ASP_MVC.Controllers
             }
 
             return false;
+        }
+
+        private Producto GetProducto()
+        {
+            Producto oProducto = new Producto();
+
+            oProducto.id = 0;
+            oProducto.codigo = "";
+            oProducto.nombre = "";
+            oProducto.cantidad = 0;
+            oProducto.precio = 0;
+            oProducto.rutaImagen = "NoDisponible";
+
+            return oProducto;
+        }
+        private Producto GetProducto(string nombre, int cantidad, double precio)
+        {
+            Producto oProducto = new Producto();
+
+            oProducto.id = 0;
+            oProducto.codigo = "";
+            oProducto.nombre = nombre;
+            oProducto.cantidad = cantidad;
+            oProducto.precio = precio;
+            oProducto.rutaImagen = "NoDisponible";
+
+            return oProducto;
+        }
+        private Producto GetProducto(int id, Producto[] aryProductos)
+        {
+            Producto oProducto = new Producto();
+
+            for (int i = 0; i < aryProductos.Length; i++)
+            {
+                if (aryProductos[i].id == id)
+                {
+                    oProducto = GetProducto(aryProductos[i].nombre, aryProductos[i].cantidad, aryProductos[i].precio);
+                    oProducto.codigo = aryProductos[i].codigo;
+                    oProducto.rutaImagen = aryProductos[i].rutaImagen;
+                    oProducto.imagen = aryProductos[i].imagen;
+                    oProducto.id = aryProductos[i].id;
+                    break;
+                }
+            }
+
+            return oProducto;
         }
     }
 }

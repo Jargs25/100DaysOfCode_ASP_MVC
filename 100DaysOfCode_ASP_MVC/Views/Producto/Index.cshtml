@@ -1,8 +1,8 @@
-﻿@model List<_100DaysOfCode_ASP_MVC.Models.Producto>
+﻿@model _100DaysOfCode_ASP_MVC.WCFProductos.Producto[]
 
 @{
     ViewBag.Title = "Index";
-    _100DaysOfCode_ASP_MVC.Models.Producto oProducto = (_100DaysOfCode_ASP_MVC.Models.Producto)ViewBag.Producto;
+    _100DaysOfCode_ASP_MVC.WCFProductos.Producto oProducto = (_100DaysOfCode_ASP_MVC.WCFProductos.Producto)ViewBag.Producto;
     string accion = ViewBag.Accion;
     string btnBuscar = accion == "edit" ? "Limpiar" : "Buscar";
     string enabled = btnBuscar == "Limpiar" ? "disabled" : "";
@@ -36,9 +36,9 @@
                     <div class="form-horizontal">
                         <div class="form-group">
                             <div class="col-md-12 text-center">
-                                @if (oProducto.rutaImagen != "NoDisponible" && oProducto.rutaImagen != null)
+                                @if (oProducto.rutaImagen != "NoDisponible" && oProducto.rutaImagen != null && oProducto.imagen != null)
                                 {
-                                    <img src='@Url.Action("GetImagen", "Producto", new { imagen = oProducto.rutaImagen })' width="141px" height="141px" id="imgProducto" />
+                                    <img src='data:image/@oProducto.rutaImagen.Split('.')[1]; base64,@Convert.ToBase64String(oProducto.imagen)' width="141px" height="141px" id="imgProducto" />
                                 }
                                 else
                                 {
